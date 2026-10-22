@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>PR Radar</title>
+    <meta
+      name="description"
+      content="App da barra do Mac que acompanha seus PRs do GitHub: review, CI, conflito, cycle time, PRs do time e respostas aos seus comentários."
+    />
+    <meta
+      property="og:title"
+      content="PR Radar"
+    />
+    <meta
+      property="og:description"
+      content="Seus PRs do GitHub na barra do Mac, com aviso quando algo muda."
+    />
+    <meta
+      property="og:image"
+      content="https://tabataruiz.github.io/pr-radar-releases/assets/mine-light.png"
+    />
+    <link
+      rel="icon"
+      href="assets/icon.png"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #11211f;
+        --ink-soft: #3d4f4c;
+        --mute: #66787560;
+        --text-mute: #5f706d;
+        --paper: #f5f8f7;
+        --card: #ffffff;
+        --line: #dfe7e5;
+        --signal: #0d9488;
+        --signal-deep: #0a6b63;
+        --signal-soft: #dcf2ef;
+        --amber: #b7731a;
+        --rose: #d93d42;
+        --radius: 16px;
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 17px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      .container {
+        width: min(1120px, 100% - 40px);
+        margin: 0 auto;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding-bottom: 96px;
+        background:
+          radial-gradient(1200px 520px at 78% -10%, #bfe8e1 0%, transparent 60%),
+          radial-gradient(900px 600px at 10% 10%, #e3ecfb 0%, transparent 55%),
+          linear-gradient(180deg, #eef5f3 0%, var(--paper) 100%);
+      }
+
+      .menubar {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 22px;
+        height: 34px;
+        padding: 0 20px;
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(18px) saturate(1.4);
+        border-bottom: 1px solid rgba(17, 33, 31, 0.06);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-soft);
+      }
+
+      .menubar__glyph {
+        width: 15px;
+        height: 15px;
+        border-radius: 4px;
+        background: rgba(17, 33, 31, 0.28);
+      }
+
+      .menubar__glyph--round {
+        border-radius: 50%;
+      }
+
+      .menubar__radar {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 7px;
+        border-radius: 6px;
+        background: rgba(17, 33, 31, 0.1);
+        color: var(--ink);
+        font-variation-settings: 'wdth' 85;
+        font-weight: 600;
+      }
+
+      .menubar__radar svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .hero__grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 420px;
+        gap: 56px;
+        align-items: start;
+      }
+
+      .hero__copy {
+        padding-top: 120px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 28px;
+        font-weight: 650;
+        font-size: 18px;
+      }
+
+      .brand img {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(13, 148, 136, 0.28);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(42px, 6vw, 70px);
+        line-height: 1.02;
+        letter-spacing: -0.035em;
+        font-weight: 680;
+        max-width: 12ch;
+      }
+
+      .lede {
+        margin: 24px 0 0;
+        max-width: 46ch;
+        font-size: 19px;
+        color: var(--ink-soft);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px 22px;
+        margin-top: 36px;
+      }
+
+      .download {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 24px;
+        border-radius: 12px;
+        background: var(--signal);
+        color: #fff;
+        font-weight: 650;
+        font-size: 17px;
+        text-decoration: none;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.25) inset,
+          0 10px 24px rgba(13, 148, 136, 0.32);
+        transition:
+          transform 160ms ease,
+          background-color 160ms ease;
+      }
+
+      .download:hover {
+        background: var(--signal-deep);
+        transform: translateY(-1px);
+      }
+
+      .download:focus-visible,
+      .all-versions:focus-visible {
+        outline: 3px solid var(--signal);
+        outline-offset: 3px;
+      }
+
+      .download svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .all-versions {
+        font-weight: 600;
+        color: var(--signal-deep);
+        text-underline-offset: 4px;
+      }
+
+      .requirements {
+        margin: 18px 0 0;
+        font-size: 14px;
+        color: var(--text-mute);
+      }
+
+      .hero__panel {
+        position: relative;
+        margin-top: 6px;
+        margin-right: 20px;
+      }
+
+      .hero__panel::before {
+        content: '';
+        position: absolute;
+        top: -7px;
+        right: 54px;
+        width: 14px;
+        height: 14px;
+        background: #f1f3f2;
+        transform: rotate(45deg);
+        border-radius: 3px;
+      }
+
+      .hero__panel img {
+        position: relative;
+        border-radius: 14px;
+        box-shadow:
+          0 0 0 1px rgba(17, 33, 31, 0.08),
+          0 30px 60px -12px rgba(17, 33, 31, 0.32),
+          0 12px 24px -8px rgba(17, 33, 31, 0.18);
+        animation: drop 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+
+      @keyframes drop {
+        from {
+          opacity: 0;
+          transform: translateY(-14px) scale(0.985);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      section {
+        padding: 104px 0;
+      }
+
+      .section-title {
+        margin: 0 0 14px;
+        font-size: clamp(30px, 3.6vw, 42px);
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        font-weight: 660;
+      }
+
+      .section-lede {
+        margin: 0;
+        max-width: 56ch;
+        color: var(--ink-soft);
+        font-size: 18px;
+      }
+
+      .rail {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 44px;
+        max-width: 760px;
+      }
+
+      .rail__stage {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .rail__bar {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--signal);
+      }
+
+      .rail__stage--active .rail__bar {
+        background: repeating-linear-gradient(
+          -45deg,
+          var(--signal-soft) 0 6px,
+          #8fd3c9 6px 12px
+        );
+      }
+
+      .rail__stage--attention .rail__bar {
+        background: #e8a33d;
+      }
+
+      .rail__stage--idle .rail__bar {
+        background: var(--line);
+      }
+
+      .rail__label {
+        font-weight: 650;
+        font-size: 15px;
+      }
+
+      .rail__text {
+        font-size: 14px;
+        color: var(--text-mute);
+      }
+
+      .feature {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 72px;
+        align-items: center;
+        padding: 56px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .feature:nth-of-type(even) {
+        grid-template-columns: 380px minmax(0, 1fr);
+      }
+
+      .feature:nth-of-type(even) .feature__shot {
+        order: -1;
+      }
+
+      .feature h3 {
+        margin: 0 0 12px;
+        font-size: 28px;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        font-weight: 650;
+      }
+
+      .feature p {
+        margin: 0;
+        max-width: 48ch;
+        color: var(--ink-soft);
+      }
+
+      .feature__shot img {
+        border-radius: 14px;
+        box-shadow:
+          0 0 0 1px rgba(17, 33, 31, 0.08),
+          0 24px 48px -16px rgba(17, 33, 31, 0.28);
+      }
+
+      .install {
+        background: var(--ink);
+        color: #eaf2f0;
+      }
+
+      .install .section-lede {
+        color: #b8c8c5;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+        margin: 48px 0 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: step;
+      }
+
+      .steps li {
+        counter-increment: step;
+        padding: 26px;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+      }
+
+      .steps li::before {
+        content: counter(step);
+        display: block;
+        margin-bottom: 18px;
+        font-size: 44px;
+        font-weight: 650;
+        line-height: 1;
+        color: #5eead4;
+        font-variation-settings: 'wdth' 80;
+      }
+
+      .steps h3 {
+        margin: 0 0 8px;
+        font-size: 19px;
+        font-weight: 650;
+      }
+
+      .steps p {
+        margin: 0;
+        color: #b8c8c5;
+        font-size: 15px;
+      }
+
+      code {
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: rgba(94, 234, 212, 0.12);
+        color: #9ff3e3;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 13.5px;
+        white-space: nowrap;
+      }
+
+      .install .actions {
+        margin-top: 44px;
+      }
+
+      .install .all-versions {
+        color: #5eead4;
+      }
+
+      footer {
+        padding: 44px 0 56px;
+        font-size: 15px;
+        color: var(--text-mute);
+      }
+
+      footer .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      footer a {
+        color: var(--signal-deep);
+        font-weight: 600;
+        text-underline-offset: 4px;
+      }
+
+      @media (max-width: 900px) {
+        .hero__grid,
+        .feature,
+        .feature:nth-of-type(even) {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 40px;
+        }
+
+        .feature:nth-of-type(even) .feature__shot {
+          order: 0;
+        }
+
+        .hero__copy {
+          padding-top: 64px;
+        }
+
+        .hero__panel {
+          max-width: 400px;
+          margin: 0 auto;
+        }
+
+        .hero__panel::before {
+          display: none;
+        }
+
+        .feature__shot {
+          max-width: 380px;
+        }
+
+        .steps {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .rail {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          row-gap: 24px;
+        }
+
+        section {
+          padding: 72px 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        .hero__panel img {
+          animation: none;
+        }
+
+        .download {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div
+        class="menubar"
+        aria-hidden="true"
+      >
+        <span class="menubar__glyph"></span>
+        <span class="menubar__glyph menubar__glyph--round"></span>
+        <span class="menubar__radar">
+          <svg viewBox="0 0 24 24">
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+            <circle
+              cx="12"
+              cy="12"
+              r="5.4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              opacity="0.5"
+            />
+            <path
+              d="M12 12 L12 2 A10 10 0 0 1 21.4 8.6 Z"
+              fill="currentColor"
+              opacity="0.35"
+            />
+            <circle
+              cx="12"
+              cy="12"
+              r="1.7"
+              fill="currentColor"
+            />
+          </svg>
+          4
+        </span>
+        <span class="menubar__glyph"></span>
+        <span>Qua 14:32</span>
+      </div>
+
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <div class="brand">
+            <img
+              src="assets/icon.png"
+              alt=""
+            />
+            PR Radar
+          </div>
+          <h1>Seus PRs, sem abrir o GitHub.</h1>
+          <p class="lede">
+            Um app na barra do Mac que acompanha seus pull requests e os do seu time. Review, CI,
+            conflito e cycle time num olhar, com aviso quando alguém aprova, comenta ou responde
+            você.
+          </p>
+          <div class="actions">
+            <a
+              class="download"
+              href="https://github.com/tabataruiz/pr-radar-releases/releases/latest/download/PR-Radar.dmg"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 4v11" />
+                <path d="m7 11 5 5 5-5" />
+                <path d="M5 20h14" />
+              </svg>
+              Baixar para macOS
+            </a>
+            <a
+              class="all-versions"
+              href="https://github.com/tabataruiz/pr-radar-releases/releases"
+            >
+              Todas as versões
+            </a>
+          </div>
+          <p
+            class="requirements"
+            data-version
+          >
+            macOS 12 ou mais novo, Intel e Apple Silicon. Assinado e notarizado pela Apple.
+          </p>
+        </div>
+
+        <div class="hero__panel">
+          <img
+            src="assets/mine-light.png"
+            width="480"
+            height="680"
+            alt="Painel do PR Radar com quatro PRs: um pronto para mergear, um desatualizado com threads abertas, um que passou do cycle time e um em draft"
+          />
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="container">
+          <h2 class="section-title">O ciclo de cada PR numa linha</h2>
+          <p class="section-lede">
+            Cada card mostra onde o PR está e o que falta, sem precisar abrir a página dele. Quando
+            tudo fica verde, o botão de merge aparece ali mesmo.
+          </p>
+          <div
+            class="rail"
+            aria-hidden="true"
+          >
+            <div class="rail__stage rail__stage--attention">
+              <span class="rail__bar"></span>
+              <span class="rail__label">Review</span>
+              <span class="rail__text">Aprovações, mudanças pedidas e threads abertas</span>
+            </div>
+            <div class="rail__stage rail__stage--active">
+              <span class="rail__bar"></span>
+              <span class="rail__label">CI</span>
+              <span class="rail__text">Rodando, passou ou falhou</span>
+            </div>
+            <div class="rail__stage">
+              <span class="rail__bar"></span>
+              <span class="rail__label">Base</span>
+              <span class="rail__text">Em dia, desatualizada ou com conflito</span>
+            </div>
+            <div class="rail__stage rail__stage--idle">
+              <span class="rail__bar"></span>
+              <span class="rail__label">Merge</span>
+              <span class="rail__text">Acende quando o PR pode ser mergeado</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="container">
+        <article class="feature">
+          <div>
+            <h3>O time inteiro, separado por pessoa</h3>
+            <p>
+              Escolha quem acompanhar e veja os PRs de cada um, com destaque para os que ainda não
+              têm o seu review. Um filtro mostra só o que está sem aprovação.
+            </p>
+          </div>
+          <div class="feature__shot">
+            <img
+              src="assets/team.png"
+              width="480"
+              height="680"
+              loading="lazy"
+              alt="Aba Time com três pessoas e os PRs da primeira expandidos"
+            />
+          </div>
+        </article>
+
+        <article class="feature">
+          <div>
+            <h3>Avisado quando algo muda</h3>
+            <p>
+              Aprovação, CI verde ou falhando, comentário novo, conflito, resposta a um comentário
+              seu e cycle time estourado viram notificações do Mac e ficam guardados numa lista.
+            </p>
+          </div>
+          <div class="feature__shot">
+            <img
+              src="assets/notifications.png"
+              width="480"
+              height="680"
+              loading="lazy"
+              alt="Aba Notificações com aprovação, CI verde, resposta e review solicitado"
+            />
+          </div>
+        </article>
+
+        <article class="feature">
+          <div>
+            <h3>Anuncie o PR para a guilda em um clique</h3>
+            <p>
+              O PR Radar monta a mensagem com o módulo e a descrição, avisa se ainda há threads sem
+              resolver e envia pelo Slack em seu nome, para os canais que você escolher.
+            </p>
+          </div>
+          <div class="feature__shot">
+            <img
+              src="assets/guild.png"
+              width="480"
+              height="680"
+              loading="lazy"
+              alt="Janela de anúncio do PR com módulo, descrição e canais do Slack"
+            />
+          </div>
+        </article>
+
+        <article class="feature">
+          <div>
+            <h3>Claro, escuro ou como o seu Mac estiver</h3>
+            <p>
+              O painel usa o vidro translúcido do próprio macOS e acompanha o tema do sistema, ou o
+              que você escolher nas configurações. As atualizações chegam sozinhas, com um clique
+              para instalar.
+            </p>
+          </div>
+          <div class="feature__shot">
+            <img
+              src="assets/mine-dark.png"
+              width="480"
+              height="680"
+              loading="lazy"
+              alt="Painel do PR Radar no tema escuro"
+            />
+          </div>
+        </article>
+      </div>
+
+      <section
+        class="install"
+        id="instalar"
+      >
+        <div class="container">
+          <h2 class="section-title">Comece em três passos</h2>
+          <p class="section-lede">
+            O PR Radar usa o login do GitHub CLI que você já tem. Ele não pede senha nem token.
+          </p>
+          <ol class="steps">
+            <li>
+              <h3>Faça login no GitHub CLI</h3>
+              <p>No Terminal: <code>brew install gh</code> e depois <code>gh auth login</code>.</p>
+            </li>
+            <li>
+              <h3>Instale o app</h3>
+              <p>
+                Abra o DMG, arraste o PR Radar para Aplicativos e abra por lá. Fora de Aplicativos
+                ele não consegue se atualizar.
+              </p>
+            </li>
+            <li>
+              <h3>Configure o radar</h3>
+              <p>
+                Na engrenagem, escolha as organizações, as pessoas que quer acompanhar e o seu cycle
+                time. Se quiser, conecte o Slack.
+              </p>
+            </li>
+          </ol>
+          <div class="actions">
+            <a
+              class="download"
+              href="https://github.com/tabataruiz/pr-radar-releases/releases/latest/download/PR-Radar.dmg"
+            >
+              Baixar para macOS
+            </a>
+            <a
+              class="all-versions"
+              href="https://github.com/tabataruiz/pr-radar-releases#readme"
+            >
+              Guia completo de instalação
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <span>
+          Desenvolvido por Tabata Ruiz Schnoeller.
+          <a href="https://github.com/tabataruiz">github.com/tabataruiz</a>
+        </span>
+        <span data-version-footer></span>
+      </div>
+    </footer>
+
+    <script>
+      fetch('https://api.github.com/repos/tabataruiz/pr-radar-releases/releases/latest')
+        .then((response) => (response.ok ? response.json() : null))
+        .then((release) => {
+          if (!release?.tag_name) return
+
+          const version = release.tag_name.replace(/^v/, '')
+          const requirements = document.querySelector('[data-version]')
+          const footer = document.querySelector('[data-version-footer]')
+
+          requirements.textContent = `Versão ${version}. ${requirements.textContent}`
+          footer.textContent = `Versão ${version}`
+        })
+        .catch(() => undefined)
+    </script>
+  </body>
+</html>
