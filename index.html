@@ -9,7 +9,7 @@
     <title>PR Radar</title>
     <meta
       name="description"
-      content="App da barra do Mac que acompanha seus PRs do GitHub: review, CI, conflito, cycle time, PRs do time e respostas aos seus comentários."
+      content="App da barra do Mac que acompanha seus PRs do GitHub: review, CI, conflito, cycle time, PRs do time, respostas aos seus comentários e anúncio para a guilda no Slack."
     />
     <meta
       property="og:title"
@@ -632,7 +632,7 @@
             src="assets/mine-light.png"
             width="480"
             height="680"
-            alt="Painel do PR Radar com quatro PRs: um pronto para mergear, um desatualizado com threads abertas, um que passou do cycle time e um em draft"
+            alt="Painel do PR Radar com quatro PRs de duas organizações: um aguardando review, um pronto para mergear, um desatualizado com threads abertas e um que passou do cycle time"
           />
         </div>
       </div>
@@ -644,7 +644,9 @@
           <h2 class="section-title">O ciclo de cada PR numa linha</h2>
           <p class="section-lede">
             Cada card mostra onde o PR está e o que falta, sem precisar abrir a página dele. Quando
-            tudo fica verde, o botão de merge aparece ali mesmo.
+            tudo fica verde, o botão de merge aparece ali mesmo. Se a base ficou para trás, dá para
+            atualizar a branch com um clique. Trabalha em mais de uma organização? Cada PR ganha um
+            selo com a cor da organização dele.
           </p>
           <div
             class="rail"
@@ -680,7 +682,8 @@
             <h3>O time inteiro, separado por pessoa</h3>
             <p>
               Escolha quem acompanhar e veja os PRs de cada um, com destaque para os que ainda não
-              têm o seu review. Um filtro mostra só o que está sem aprovação.
+              têm o seu review. Filtros mostram só os PRs que pediram o seu review ou os que ainda
+              estão sem aprovação.
             </p>
           </div>
           <div class="feature__shot">
@@ -689,7 +692,7 @@
               width="480"
               height="680"
               loading="lazy"
-              alt="Aba Time com três pessoas e os PRs da primeira expandidos"
+              alt="Aba Time com o filtro Pediram meu review ligado e os PRs de duas pessoas"
             />
           </div>
         </article>
@@ -715,10 +718,11 @@
 
         <article class="feature">
           <div>
-            <h3>Anuncie o PR para a guilda em um clique</h3>
+            <h3>Anuncie seus PRs para a guilda</h3>
             <p>
-              O PR Radar monta a mensagem com o módulo e a descrição, avisa se ainda há threads sem
-              resolver e envia pelo Slack em seu nome, para os canais que você escolher.
+              Junte um ou vários PRs na mesma mensagem. O PR Radar sugere o módulo e a descrição de
+              cada um, você ajusta o texto como quiser, e ele envia pelo Slack em seu nome, para os
+              canais de cada repositório. Se ainda houver threads sem resolver, ele avisa antes.
             </p>
           </div>
           <div class="feature__shot">
@@ -727,7 +731,7 @@
               width="480"
               height="680"
               loading="lazy"
-              alt="Janela de anúncio do PR com módulo, descrição e canais do Slack"
+              alt="Janela de anúncio com três PRs na mesma mensagem, um aviso de threads abertas e os canais do Slack"
             />
           </div>
         </article>
@@ -751,6 +755,26 @@
             />
           </div>
         </article>
+
+        <article class="feature">
+          <div>
+            <h3>Configuração guiada na primeira vez</h3>
+            <p>
+              O app confere se o GitHub CLI está instalado e com login feito, abre o Terminal para
+              resolver o que faltar e leva você a escolher as organizações, as pessoas do time e o
+              Slack. Nada vem pré-configurado: o radar acompanha só o que você escolher.
+            </p>
+          </div>
+          <div class="feature__shot">
+            <img
+              src="assets/setup.png"
+              width="480"
+              height="680"
+              loading="lazy"
+              alt="Tela de configuração do PR Radar com GitHub CLI, login e organizações prontos e os passos opcionais de pessoas do time e Slack"
+            />
+          </div>
+        </article>
       </div>
 
       <section
@@ -760,13 +784,10 @@
         <div class="container">
           <h2 class="section-title">Comece em três passos</h2>
           <p class="section-lede">
-            O PR Radar usa o login do GitHub CLI que você já tem. Ele não pede senha nem token.
+            O PR Radar usa o login do GitHub CLI. Ele não pede senha nem token, e ajuda a instalar o
+            que faltar.
           </p>
           <ol class="steps">
-            <li>
-              <h3>Faça login no GitHub CLI</h3>
-              <p>No Terminal: <code>brew install gh</code> e depois <code>gh auth login</code>.</p>
-            </li>
             <li>
               <h3>Instale o app</h3>
               <p>
@@ -775,10 +796,17 @@
               </p>
             </li>
             <li>
-              <h3>Configure o radar</h3>
+              <h3>Conecte o GitHub</h3>
               <p>
-                Na engrenagem, escolha as organizações, as pessoas que quer acompanhar e o seu cycle
-                time. Se quiser, conecte o Slack.
+                Na primeira abertura, o app confere o <code>gh</code> e abre o Terminal para instalar
+                e fazer login, se precisar.
+              </p>
+            </li>
+            <li>
+              <h3>Escolha o que acompanhar</h3>
+              <p>
+                Informe as organizações e as pessoas do time e ajuste o seu cycle time. Se quiser,
+                conecte o Slack.
               </p>
             </li>
           </ol>
